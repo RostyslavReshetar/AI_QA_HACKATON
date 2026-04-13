@@ -1,0 +1,107 @@
+name: InvenTree QA Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  api-tests:
+    name: API Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start InvenTree
+        working-directory: docker
+        run: |
+          docker compose --env-file .env up -d
+          echo "Waiting for InvenTree to be ready..."
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8080/api/ > /dev/null 2>&1; then
+              echo "InvenTree is ready!"
+              break
+            fi
+            echo "Waiting... ($i/60)"
+            sleep 5
+          done
+
+      - name: Seed test data
+        run: bash docker/setup-superuser.sh
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install API test dependencies
+        working-directory: automation/api
+        run: npm ci
+
+      - name: Run API tests
+        working-directory: automation/api
+        run: npx playwright test
+        env:
+          INVENTREE_URL: http://localhost:8080
+
+      - name: Upload API test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-test-report
+          path: automation/api/playwright-report/
+
+  ui-tests:
+    name: UI Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Start InvenTree
+        working-directory: docker
+        run: |
+          docker compose --env-file .env up -d
+          for i in $(seq 1 60); do
+            if curl -sf http://localhost:8080/api/ > /dev/null 2>&1; then
+              echo "InvenTree is ready!"
+              break
+            fi
+            sleep 5
+          done
+
+      - name: Seed test data
+        run: bash docker/setup-superuser.sh
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install UI test dependencies
+        working-directory: automation/ui
+        run: |
+          npm ci
+          npx playwright install chromium --with-deps
+
+      - name: Run UI tests
+        working-directory: automation/ui
+        run: npx playwright test
+        env:
+          BASE_URL: http://localhost:8080
+
+      - name: Upload UI test report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-test-report
+          path: automation/ui/playwright-report/
+
+      - name: Upload failure screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-failure-captures
+          path: automation/ui/test-results/
