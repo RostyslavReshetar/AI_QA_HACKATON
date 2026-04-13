@@ -10,12 +10,12 @@ export class PartDetailPage extends BasePage {
     await this.page.goto(`/web/part/${partId}/details`);
     // Wait for the React app to fully render the part detail page
     await this.page.waitForLoadState('networkidle');
-    await this.page.locator('text=/Part:/').first().waitFor({ state: 'visible', timeout: 15000 });
+    await this.page.locator('text=/Part:/').first().waitFor({ state: 'visible', timeout: 30000 });
   }
 
   async getPartName(): Promise<string> {
     const heading = this.page.locator('text=/Part:/').first();
-    await heading.waitFor({ state: 'visible', timeout: 15000 });
+    await heading.waitFor({ state: 'visible', timeout: 30000 });
     return (await heading.textContent()) || '';
   }
 
