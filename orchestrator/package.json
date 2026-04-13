@@ -1,0 +1,25 @@
+{
+  "name": "qa-orchestrator",
+  "version": "1.0.0",
+  "description": "Multi-agent AI orchestrator for QA engineering using Claude CLI",
+  "type": "module",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "start:dry-run": "tsx src/index.ts --dry-run",
+    "start:verbose": "tsx src/index.ts --verbose",
+    "build": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "chalk": "^5.3.0",
+    "execa": "^9.5.2",
+    "fs-extra": "^11.2.0",
+    "ora": "^8.1.1"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}
