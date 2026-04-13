@@ -1,0 +1,21 @@
+# Caddy reverse proxy for InvenTree QA testing
+# Serves static/media files and proxies to InvenTree server
+
+:80 {
+    encode gzip
+
+    # Serve static files
+    handle_path /static/* {
+        root * /var/www/static
+        file_server
+    }
+
+    # Serve media files
+    handle_path /media/* {
+        root * /var/www/media
+        file_server
+    }
+
+    # Proxy everything else to InvenTree server
+    reverse_proxy inventree-qa-server:8000
+}
