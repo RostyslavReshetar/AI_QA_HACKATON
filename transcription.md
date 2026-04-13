@@ -186,3 +186,75 @@ Gemini AI тут немає. Я не знаю чому. Це якийсь вок
 І сказати — **проаналізуй ці три файли. Claude Code.** Да, норм.
 
 Так, секунду, я натискаю стоп рекордінг.
+
+
+# Ідеї щоб виділитись на хакатоні must have до імплементації                                                                                                                                   
+                                                                                                                                                                    
+  1. Multi-agent оркестрація (а не просто чат)                                                                                                                      
+                                                                                                                                                                    
+  Замість "я попросив Claude написати тести" — показати pipeline з кількох агентів:                                                                                 
+  - Agent 1 (Research) — парсить документацію, витягує вимоги                                                                                                       
+  - Agent 2 (Test Design) — генерує тест-кейси з requirements                                                                                                       
+  - Agent 3 (Code Gen) — пише автоматизацію з тест-кейсів                                                                                                           
+  - Agent 4 (Review) — ревʼюїть згенерований код, знаходить gaps                                                                                                    
+                                                                                                                                                                    
+  Це можна зробити через Claude Code subagents паралельно. Виглядає як справжній QA engineering pipeline, а не копі-пейст з чату.                                   
+                                                                                                                                                                    
+  ---                                                                                                                                                               
+  2. Requirements Traceability Matrix (RTM)                                                                                                                         
+                                                                                                                                                                    
+  Ніхто цього не зробить, а це золотий стандарт QA:
+  - Кожен тест-кейс → лінкується на конкретну вимогу з документації                                                                                                 
+  - Матриця покриття: яка вимога покрита якими тестами (manual + automated)                                                                                         
+  - Gap analysis: які вимоги не покриті і чому                                                                                                                      
+                                                                                                                                                                    
+  Формат: окремий traceability-matrix.md або .xlsx                                                                                                                  
+                                                                                                                                                                    
+  ---                                                                                                                                                               
+  3. Risk-based test prioritization                                                                                                                                 
+                                               
+  Замість плоского списку тестів — пріоритизація за ризиком:
+  - Critical: CRUD operations, data integrity                                                                                                                       
+  - High: BOM management, stock tracking (бізнес-вплив)
+  - Medium: UI validation, filtering                                                                                                                                
+  - Low: cosmetic, edge cases                                                                                                                                       
+                                                                                                                                                                    
+  Показати що AI не просто генерує, а думає як QA-інженер.                                                                                                          
+                                                                                                                                                                    
+  ---                                          
+  4. Self-healing selectors + AI-driven test maintenance                                                                                                            
+                                                                                                                                                                    
+  В UI тестах додати шар який:                 
+  - Використовує кілька стратегій пошуку елементів (data-testid → aria-label → CSS → XPath)                                                                         
+  - При падінні — логує чому впав (елемент зник? змінився текст? timeout?)                                                                                          
+  - Генерує screenshot + DOM snapshot на кожному fail                                                                                                               
+                                                                                                                                                                    
+  ---                                                                                                                                                               
+  5. Contract testing для API                                                                                                                                       
+                                                                                                                                                                    
+  Крім звичайних API тестів — schema validation layer:
+  - Завантажити OpenAPI spec InvenTree                                                                                                                              
+  - Автоматично валідувати що кожна відповідь відповідає schema
+  - Знайти розбіжності між документацією і реальним API (це реальний баг-хантінг)                                                                                   
+                                                                                                                                                                    
+  # Не просто "status == 200", а:                                                                                                                                   
+  jsonschema.validate(response.json(), openapi_schema["Part"])                                                                                                      
+                                                                                                                                                                    
+  ---                                                                                                                                                               
+  6. Mutation testing концепт
+
+Показати що тести реально ловлять баги, а не просто проходять:
+  - Навмисно зламати щось в InvenTree (змінити validation rule)                                                                                                     
+  - Показати що тести це зловили                                                                                                                                    
+  - Це доводить якість тестів, а не кількість                                                                                                                       
+                                                                                                                                                                    
+  ---                                                                                                                                                               
+  7. CI/CD ready submission                                                                                                                                         
+                                                                                                                                                                    
+  Додати docker-compose.yml + GitHub Actions workflow який:
+  - Піднімає InvenTree                                                                                                                                              
+  - Запускає API тести                                                                                                                                              
+  - Запускає UI тести                          
+  - Генерує HTML report з результатами                                                                                                                              
+                                          
+  Жюрі зможе просто docker compose up і побачити все працюючим.
