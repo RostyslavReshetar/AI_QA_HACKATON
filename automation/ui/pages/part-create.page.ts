@@ -2,74 +2,71 @@ import { type Page, type Locator } from '@playwright/test';
 import { BasePage } from './base.page.js';
 
 export class PartCreatePage extends BasePage {
-  private modal: Locator;
+  private dialog: Locator;
 
   constructor(page: Page) {
     super(page);
-    this.modal = page.locator('.mantine-Modal-root, [role="dialog"]').first();
+    this.dialog = page.getByRole('dialog', { name: 'Add Part' });
   }
 
   async fillName(name: string): Promise<void> {
-    const nameInput = this.modal.getByLabel(/name/i).first();
-    await nameInput.clear();
-    await nameInput.fill(name);
+    const input = this.dialog.getByRole('textbox', { name: 'text-field-name' });
+    await input.clear();
+    await input.fill(name);
   }
 
   async fillDescription(description: string): Promise<void> {
-    const descInput = this.modal.getByLabel(/description/i).first();
-    await descInput.clear();
-    await descInput.fill(description);
+    const input = this.dialog.getByRole('textbox', { name: 'text-field-description' });
+    await input.clear();
+    await input.fill(description);
   }
 
   async selectCategory(categoryName: string): Promise<void> {
-    // InvenTree uses a searchable select for category
-    const categoryField = this.modal.locator('[class*="category"], [data-field="category"]')
-      .or(this.modal.getByLabel(/category/i)).first();
-    await categoryField.click();
-    // Type in the search
-    const searchInput = this.page.getByRole('searchbox').or(this.page.getByPlaceholder(/search/i)).first();
-    if (await searchInput.isVisible({ timeout: 2000 }).catch(() => false)) {
-      await searchInput.fill(categoryName);
-    }
-    // Select from dropdown
-    const option = this.page.getByRole('option', { name: categoryName })
-      .or(this.page.locator(`text=${categoryName}`)).first();
+    const combo = this.dialog.getByRole('combobox', { name: 'related-field-category' });
+    await combo.click();
+    await combo.fill(categoryName);
+    // Wait for dropdown results and click matching option
+    const option = this.page.getByRole('option', { name: new RegExp(categoryName, 'i') }).first();
+    await option.waitFor({ state: 'visible', timeout: 5000 });
     await option.click();
   }
 
   async setIPN(ipn: string): Promise<void> {
-    const ipnInput = this.modal.getByLabel(/IPN/i).first();
-    await ipnInput.clear();
-    await ipnInput.fill(ipn);
+    const input = this.dialog.getByRole('textbox', { name: 'text-field-IPN' });
+    await input.clear();
+    await input.fill(ipn);
   }
 
   async setKeywords(keywords: string): Promise<void> {
-    const input = this.modal.getByLabel(/keywords/i).first();
+    const input = this.dialog.getByRole('textbox', { name: 'text-field-keywords' });
     await input.clear();
     await input.fill(keywords);
   }
 
   async setUnits(units: string): Promise<void> {
-    const input = this.modal.getByLabel(/units/i).first();
+    const input = this.dialog.getByRole('textbox', { name: 'text-field-units' });
     await input.clear();
     await input.fill(units);
   }
 
-  async toggleAttribute(attr: string, value: boolean): Promise<void> {
-    const checkbox = this.modal.getByLabel(new RegExp(attr, 'i')).first();
-    const isChecked = await checkbox.isChecked().catch(() => false);
+  async toggleSwitch(fieldName: string, value: boolean): Promise<void> {
+    const sw = this.dialog.getByRole('switch', { name: `boolean-field-${fieldName}` });
+    const isChecked = await sw.isChecked();
     if (isChecked !== value) {
-      await checkbox.click();
+      await sw.click();
     }
   }
 
   async submit(): Promise<void> {
-    const submitBtn = this.modal.getByRole('button', { name: /submit|create|save/i }).first();
-    await submitBtn.click();
+    await this.dialog.getByRole('button', { name: 'Submit' }).click();
+  }
+
+  async cancel(): Promise<void> {
+    await this.dialog.getByRole('button', { name: 'Cancel' }).click();
   }
 
   async getValidationErrors(): Promise<string[]> {
-    const errors = this.modal.locator('.mantine-Input-error, [class*="error"], .field-error');
+    const errors = this.dialog.locator('.mantine-Input-error, [class*="error"]');
     const count = await errors.count();
     const messages: string[] = [];
     for (let i = 0; i < count; i++) {

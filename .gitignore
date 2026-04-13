@@ -6,3 +6,4 @@ inventree-data/
 test-results/
 playwright-report/
 .playwright/
+.auth/

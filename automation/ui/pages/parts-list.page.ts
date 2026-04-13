@@ -1,4 +1,4 @@
-import { type Page, type Locator, expect } from '@playwright/test';
+import { type Page, type Locator } from '@playwright/test';
 import { BasePage } from './base.page.js';
 
 export class PartsListPage extends BasePage {
@@ -7,22 +7,25 @@ export class PartsListPage extends BasePage {
   }
 
   async navigate(): Promise<void> {
-    await this.page.goto('/platform/part/');
+    await this.page.goto('/web/part/category/index/parts');
     await this.waitForPageLoad();
   }
 
   async clickCreatePart(): Promise<void> {
-    // InvenTree uses an "Add Part" or "New Part" action button
-    const addBtn = this.page.getByRole('button', { name: /new part|add part|create part/i }).first();
-    await addBtn.click();
-    await this.waitForModal();
+    // Click "Add Parts" dropdown menu button
+    await this.page.getByRole('button', { name: 'action-menu-add-parts' }).click();
+    // Then click "Create Part" in the dropdown
+    await this.page.getByRole('menuitem', { name: /create-part/i }).click();
+    // Wait for the "Add Part" dialog to open
+    await this.waitForDialog('Add Part');
   }
 
   async searchPart(query: string): Promise<void> {
-    const searchInput = this.page.getByPlaceholder(/search/i).first();
+    const searchInput = this.page.getByRole('textbox', { name: 'table-search-input' });
+    await searchInput.clear();
     await searchInput.fill(query);
     await searchInput.press('Enter');
-    await this.waitForPageLoad();
+    await this.page.waitForTimeout(1000); // wait for table to update
   }
 
   async getPartRowByName(name: string): Promise<Locator> {
@@ -36,17 +39,7 @@ export class PartsListPage extends BasePage {
   }
 
   async isPartVisible(name: string): Promise<boolean> {
-    try {
-      const row = await this.getPartRowByName(name);
-      return await row.isVisible({ timeout: 5000 });
-    } catch {
-      return false;
-    }
-  }
-
-  async getPartCount(): Promise<number> {
-    // InvenTree shows record count in table footer or header
-    const countText = this.page.locator('.mantine-Table-root tbody tr, table tbody tr');
-    return await countText.count();
+    const row = this.page.getByRole('row').filter({ hasText: name }).first();
+    return await row.isVisible({ timeout: 5000 }).catch(() => false);
   }
 }

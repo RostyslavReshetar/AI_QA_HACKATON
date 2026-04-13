@@ -1,4 +1,4 @@
-import { type Page, type Locator } from '@playwright/test';
+import { type Page } from '@playwright/test';
 import { BasePage } from './base.page.js';
 
 export class CategoriesPage extends BasePage {
@@ -7,39 +7,25 @@ export class CategoriesPage extends BasePage {
   }
 
   async navigate(): Promise<void> {
-    await this.page.goto('/platform/part/category/index/');
-    await this.waitForPageLoad();
+    await this.page.goto('/web/part/category/index/subcategories');
+    await this.page.waitForLoadState('networkidle');
   }
 
   async navigateToCategory(categoryId: number): Promise<void> {
-    await this.page.goto(`/platform/part/category/${categoryId}/`);
-    await this.waitForPageLoad();
+    await this.page.goto(`/web/part/category/${categoryId}/details`);
+    await this.page.waitForLoadState('networkidle');
+    // Wait for "Part Category" heading — confirms the page rendered
+    await this.page.getByText('Part Category').waitFor({ state: 'visible', timeout: 20000 });
   }
 
   async selectCategory(name: string): Promise<void> {
-    const categoryLink = this.page.getByRole('link', { name }).first();
-    await categoryLink.click();
-    await this.waitForPageLoad();
-  }
-
-  async createCategory(name: string, description?: string): Promise<void> {
-    const addBtn = this.page.getByRole('button', { name: /new category|add category/i }).first();
-    await addBtn.click();
-    await this.waitForModal();
-
-    const modal = this.page.locator('.mantine-Modal-root, [role="dialog"]').first();
-    await modal.getByLabel(/name/i).first().fill(name);
-    if (description) {
-      await modal.getByLabel(/description/i).first().fill(description);
-    }
-
-    const submitBtn = modal.getByRole('button', { name: /submit|create|save/i }).first();
-    await submitBtn.click();
+    const link = this.page.getByRole('link', { name }).first();
+    await link.click();
     await this.waitForPageLoad();
   }
 
   async getCategoryBreadcrumb(): Promise<string[]> {
-    const breadcrumbs = this.page.locator('.mantine-Breadcrumbs-root a, nav[aria-label="breadcrumb"] a');
+    const breadcrumbs = this.page.locator('[class*="Breadcrumb"] a, nav a');
     const count = await breadcrumbs.count();
     const items: string[] = [];
     for (let i = 0; i < count; i++) {
@@ -47,18 +33,5 @@ export class CategoriesPage extends BasePage {
       if (text) items.push(text.trim());
     }
     return items;
-  }
-
-  async getSubcategories(): Promise<string[]> {
-    const subcats = this.page.locator('table tbody tr a, [class*="category"] a').filter({
-      has: this.page.locator('[class*="icon"], svg'),
-    });
-    const count = await subcats.count();
-    const names: string[] = [];
-    for (let i = 0; i < count; i++) {
-      const text = await subcats.nth(i).textContent();
-      if (text) names.push(text.trim());
-    }
-    return names;
   }
 }
