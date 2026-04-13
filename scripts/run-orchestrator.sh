@@ -25,6 +25,5 @@ if ! command -v claude &> /dev/null; then
   exit 1
 fi
 
-# Pass all arguments to the orchestrator
-cd orchestrator
-npx tsx src/index.ts "$@"
+# Run orchestrator from repo root (so file outputs go to correct paths)
+npx tsx orchestrator/src/index.ts "$@"
