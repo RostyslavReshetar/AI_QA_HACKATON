@@ -10,44 +10,24 @@ export class RTMAgent implements Agent {
   };
 
   buildPrompt(context: AgentContext): string {
-    const requirements = context.previousOutputs['research'] || 'No requirements available';
-    const uiTestCases = context.previousOutputs['test-design-ui'] || '';
-    const apiTestCases = context.previousOutputs['test-design-api'] || '';
+    const reqs = (context.previousOutputs['research'] || '').substring(0, 2000);
+    const uiTc = (context.previousOutputs['test-design-ui'] || '').substring(0, 2000);
+    const apiTc = (context.previousOutputs['test-design-api'] || '').substring(0, 2000);
+    return `Generate RTM and Risk Matrix for InvenTree Parts QA.
 
-    return `Generate a Requirements Traceability Matrix and Risk-Based Test Prioritization Matrix.
+Requirements (summary): ${reqs}
+UI test cases (summary): ${uiTc}
+API test cases (summary): ${apiTc}
 
-## Requirements
-${requirements}
-
-## UI Test Cases
-${uiTestCases.substring(0, 10000)}
-
-## API Test Cases
-${apiTestCases.substring(0, 10000)}
-
-## Instructions
 Generate TWO files:
-
-1. **traceability-matrix.md** — Full RTM with columns: Req-ID, Requirement, UI-TC IDs, API-TC IDs, UI Automation, API Automation, Coverage Status
-   - Map every requirement to its test cases
-   - Include gap analysis section: which requirements have no coverage
-   - Include summary statistics
-
-2. **risk-matrix.md** — Risk-based prioritization:
-   - Priority levels: Critical, High, Medium, Low
-   - Columns: Priority, Module/Area, Risk Description, Business Impact, Test Coverage %
-   - Recommended test execution order
-
-Output using --- FILE: path --- / --- END FILE --- format.`;
+1. traceability-matrix.md — Req-ID | Requirement | UI-TC | API-TC | Coverage Status. Include gap analysis.
+2. risk-matrix.md — Priority | Module | Risk | Impact | Coverage%. 4 phases: Critical/High/Medium/Low.
+Use --- FILE: path --- / --- END FILE --- format for each.`;
   }
 
   parseOutput(raw: string): OutputFile[] {
     const files = parseFileBlocks(raw);
-    if (files.length === 0) {
-      return [
-        { path: 'traceability-matrix.md', content: raw },
-      ];
-    }
+    if (files.length === 0) return [{ path: 'traceability-matrix.md', content: raw }];
     return files;
   }
 }

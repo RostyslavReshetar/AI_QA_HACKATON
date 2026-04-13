@@ -10,32 +10,21 @@ export class ReviewerAgent implements Agent {
   };
 
   buildPrompt(context: AgentContext): string {
-    const allOutputs = Object.entries(context.previousOutputs)
-      .map(([name, output]) => `## Agent: ${name}\n${output.substring(0, 5000)}`)
-      .join('\n\n---\n\n');
+    const summary = Object.entries(context.previousOutputs)
+      .map(([name, output]) => `## ${name}\n${output.substring(0, 1000)}`)
+      .join('\n\n');
+    return `Review these QA artifacts for InvenTree Parts module:
 
-    return `Review all generated QA artifacts for quality, completeness, and correctness.
+${summary}
 
-## Generated Artifacts
-${allOutputs}
-
-## Review Criteria
-1. **Test Case Quality**: Are test cases specific, actionable, with clear expected results?
-2. **Coverage Completeness**: Are all requirements covered? Any gaps?
-3. **Code Quality**: Does automation code follow best practices (POM, proper waits, assertions)?
-4. **Contract Testing**: Is schema validation comprehensive?
-5. **Self-Healing**: Are selector strategies robust?
-6. **Risk Prioritization**: Is prioritization logical and consistent?
-
-Output a structured review report using --- FILE: path --- / --- END FILE --- format.
-Generate: review-report.md`;
+Check: test coverage completeness, code quality, POM compliance, assertion quality, missing edge cases.
+Output a review report with: severity (Critical/Major/Minor), finding, recommendation.
+Use --- FILE: review-report.md --- / --- END FILE --- format.`;
   }
 
   parseOutput(raw: string): OutputFile[] {
     const files = parseFileBlocks(raw);
-    if (files.length === 0) {
-      return [{ path: 'review-report.md', content: raw }];
-    }
+    if (files.length === 0) return [{ path: 'review-report.md', content: raw }];
     return files;
   }
 }

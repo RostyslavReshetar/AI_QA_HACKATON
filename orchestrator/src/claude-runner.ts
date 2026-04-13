@@ -1,6 +1,5 @@
 /**
  * Claude CLI Runner — wraps `claude -p` for non-interactive agent execution.
- * Handles prompt construction, execution, logging, and error handling.
  */
 import { execa } from 'execa';
 import fs from 'fs-extra';
@@ -24,10 +23,6 @@ export class ClaudeRunner {
     this.options = options;
   }
 
-  /**
-   * Run a Claude CLI agent with the given system prompt and user prompt.
-   * Logs everything to ai-logs/.
-   */
   async run(
     agent: AgentConfig,
     systemPrompt: string,
@@ -53,8 +48,9 @@ export class ClaudeRunner {
         '-p',
         '--model', this.options.model,
         '--output-format', 'text',
+        '--allowedTools', '',
       ], {
-        input: this.buildFullPrompt(systemPrompt, userPrompt),
+        input: userPrompt + '\n\nIMPORTANT: Output everything as plain text. Do NOT use any tools. Do NOT try to write files. Just output the content directly.',
         timeout: this.options.timeoutMs,
         cwd: this.options.projectRoot,
       });
@@ -64,7 +60,6 @@ export class ClaudeRunner {
       success = false;
       if (err instanceof Error) {
         error = err.message;
-        // If the process produced stdout before failing, capture it
         const execaError = err as { stdout?: string };
         output = execaError.stdout || '';
       }
@@ -72,7 +67,6 @@ export class ClaudeRunner {
 
     const durationMs = Date.now() - startTime;
 
-    // Log the interaction
     const logEntry = this.buildLogEntry(agent, systemPrompt, userPrompt, output, durationMs, success, error);
     await this.writeLog(logDir, timestamp, agent.name, logEntry);
 
@@ -88,16 +82,6 @@ export class ClaudeRunner {
     }
 
     return { output, durationMs };
-  }
-
-  private buildFullPrompt(systemPrompt: string, userPrompt: string): string {
-    return [
-      '<system-instructions>',
-      systemPrompt,
-      '</system-instructions>',
-      '',
-      userPrompt,
-    ].join('\n');
   }
 
   private buildLogEntry(

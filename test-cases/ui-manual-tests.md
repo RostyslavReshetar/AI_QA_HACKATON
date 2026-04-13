@@ -1,0 +1,151 @@
+# InvenTree Parts Module — UI Manual Test Cases
+
+> Generated: 2026-04-14
+> Scope: Parts module — CRUD, Categories, Attributes, Parameters, Templates/Variants, Negative & Boundary cases
+
+---
+
+## Shared Preconditions
+
+| PC-ID | Description |
+|-------|-------------|
+| PC-01 | User is logged in as an admin account |
+| PC-02 | At least one Category exists (e.g., "Electronics > Resistors") with a two-level hierarchy |
+| PC-03 | At least one Part exists (e.g., "Test Resistor 10k") assigned to the category from PC-02 |
+| PC-04 | At least one Part Template exists with at least one Variant attached |
+| PC-05 | At least one Parameter Template exists (e.g., "Resistance", unit "Ohm") |
+| PC-06 | Browser devtools Network tab is open and visible (for negative/API-error cases only) |
+| PC-07 | The Part referenced in PC-03 has no active stock and no BOM references |
+| PC-08 | The Part referenced in a deletion-prevention test has active stock assigned to it |
+
+---
+
+## 1. Part CRUD
+
+| TC-ID | Title | Preconditions | Steps | Expected Result | Priority | Req-ID |
+|-------|-------|---------------|-------|-----------------|----------|--------|
+| TC-PART-001 | Create part with all required fields | PC-01, PC-02 | 1. Navigate to Parts → All Parts. 2. Click "New Part". 3. Enter Name: "Test Part Alpha". 4. Select Category from PC-02. 5. Click Save. | Part is created and appears in the parts list. Detail page loads showing correct name and category. | Critical | REQ-PART-001 |
+| TC-PART-002 | Create part with all optional fields | PC-01, PC-02 | 1. Click "New Part". 2. Fill Name, Category, Description ("Optional desc"), IPN, Keywords, Link, Units. 3. Enable checkboxes: Active, Purchaseable, Salable, Trackable. 4. Click Save. | Part is saved with all provided values visible on the detail page. No fields are silently dropped. | High | REQ-PART-001 |
+| TC-PART-003 | Part name — exactly 100 characters | PC-01, PC-02 | 1. Click "New Part". 2. Paste a 100-character string into Name. 3. Select Category. 4. Click Save. | Part is saved successfully. No validation error is shown for the name field. | Critical | REQ-PART-002 |
+| TC-PART-004 | Part name — 101 characters rejected | PC-01, PC-02 | 1. Click "New Part". 2. Paste a 101-character string into Name. 3. Select Category. 4. Click Save. | Form displays an inline validation error on the Name field (e.g., "Ensure this field has no more than 100 characters"). Part is not saved. | Critical | REQ-PART-002 |
+| TC-PART-005 | Part description — exactly 250 characters | PC-01, PC-02 | 1. Click "New Part". 2. Enter a valid Name and Category. 3. Paste a 250-character string into Description. 4. Click Save. | Part is saved successfully. Description is stored and displayed in full. | High | REQ-PART-003 |
+| TC-PART-006 | Part description — 251 characters rejected | PC-01, PC-02 | 1. Click "New Part". 2. Enter valid Name and Category. 3. Paste a 251-character string into Description. 4. Click Save. | Inline validation error shown on Description field. Part is not saved. | High | REQ-PART-003 |
+| TC-PART-007 | Create part without category | PC-01 | 1. Click "New Part". 2. Enter Name only, leave Category blank. 3. Click Save. | Inline validation error on Category field ("This field is required" or equivalent). Part is not saved. | Critical | REQ-PART-004 |
+| TC-PART-008 | Read single part detail | PC-01, PC-03 | 1. Navigate to Parts → All Parts. 2. Click on the part from PC-03. | Part detail page loads showing: Name, IPN, Category, Description, all attribute flags, and associated tabs (Stock, BOM, Suppliers, etc.). | Critical | REQ-PART-005 |
+| TC-PART-009 | Full update (edit) a part | PC-01, PC-03 | 1. Open part detail from PC-03. 2. Click Edit. 3. Change Name, Description, and Category to new values. 4. Click Save. | All changed fields reflect the new values on the detail page immediately after save. | Critical | REQ-PART-006 |
+| TC-PART-010 | Partial update — change description only | PC-01, PC-03 | 1. Open part detail from PC-03. 2. Click Edit. 3. Change only Description to "Updated description". 4. Click Save. | Description is updated. Name and Category remain unchanged. | Critical | REQ-PART-006 |
+| TC-PART-011 | Delete part with no dependencies | PC-01, PC-07 | 1. Open part detail for a part with no stock/BOM (PC-07). 2. Click Delete. 3. Confirm deletion in the dialog. | Part is deleted. User is redirected to the parts list. The deleted part no longer appears in the list. | Critical | REQ-PART-007 |
+| TC-PART-012 | Delete part with active stock — prevented | PC-01, PC-08 | 1. Open part detail for a part with active stock (PC-08). 2. Click Delete. 3. Confirm deletion in the dialog. | Deletion is prevented. An error message is displayed explaining the part has active stock. Part remains in the system. | Critical | REQ-PART-007 |
+| TC-PART-013 | List parts — pagination | PC-01 | 1. Ensure more than one page of parts exists (create extras if needed). 2. Navigate to Parts → All Parts. 3. Click "Next page". | Next page loads with a different set of parts. Page indicator advances correctly. | Critical | REQ-PART-008 |
+| TC-PART-014 | List parts — filter by name | PC-01, PC-03 | 1. Navigate to Parts → All Parts. 2. Enter the name of the part from PC-03 into the search/filter box. 3. Apply filter. | Only parts matching the search term appear in the list. | Critical | REQ-PART-008 |
+| TC-PART-015 | List parts — ordering by name ascending | PC-01 | 1. Navigate to Parts → All Parts. 2. Click the "Name" column header to sort ascending. | Parts are displayed in A–Z alphabetical order by name. | High | REQ-PART-008 |
+
+---
+
+## 2. Categories
+
+| TC-ID | Title | Preconditions | Steps | Expected Result | Priority | Req-ID |
+|-------|-------|---------------|-------|-----------------|----------|--------|
+| TC-CAT-001 | Create root category | PC-01 | 1. Navigate to Parts → Categories. 2. Click "New Category". 3. Enter Name: "Root Cat A". Leave Parent blank. 4. Click Save. | Category appears in the tree at the root level with no parent. | Critical | REQ-CAT-002 |
+| TC-CAT-002 | Create child category | PC-01 | 1. Navigate to an existing category (e.g., "Electronics"). 2. Click "New Category". 3. Enter Name: "Child Cat B". Confirm Parent is pre-set. 4. Click Save. | Child category appears under the parent in the hierarchy tree. Breadcrumb shows "Electronics > Child Cat B". | Critical | REQ-CAT-001, REQ-CAT-002 |
+| TC-CAT-003 | Create deeply nested category (3+ levels) | PC-01, PC-02 | 1. Navigate to the deepest existing category (e.g., "Electronics > Resistors"). 2. Click "New Category". 3. Enter Name: "SMD Resistors". 4. Save. | New category appears at the 3rd level. Breadcrumb correctly shows all 3 levels. | Critical | REQ-CAT-001 |
+| TC-CAT-004 | Read category detail | PC-01, PC-02 | 1. Navigate to Parts → Categories. 2. Click on the "Electronics" category. | Category detail page loads with: Name, Description, parent category, child category list, and parts list. | Critical | REQ-CAT-002 |
+| TC-CAT-005 | Update category name | PC-01, PC-02 | 1. Open a category. 2. Click Edit. 3. Change Name to "Electronics Updated". 4. Save. | Category name is updated. Breadcrumbs for child categories reflect the new name. | Critical | REQ-CAT-002 |
+| TC-CAT-006 | Delete empty category | PC-01 | 1. Create a new category with no parts and no children. 2. Click Delete on it. 3. Confirm. | Category is deleted and no longer appears in the tree. | Critical | REQ-CAT-002 |
+| TC-CAT-007 | Filter parts by category (direct parts only) | PC-01, PC-02, PC-03 | 1. Navigate to the "Resistors" category detail page. 2. Observe the parts listed under that category. | Only parts directly assigned to "Resistors" appear (not parts from child categories). | High | REQ-CAT-003 |
+| TC-CAT-008 | Filter parts by category including descendants | PC-01, PC-02, PC-03 | 1. Navigate to "Electronics" (parent of "Resistors"). 2. Observe parts list or use "include sub-categories" filter option. | Parts from "Resistors" (and all other child categories) are included in the results. | High | REQ-CAT-003 |
+| TC-CAT-009 | Category part count — direct | PC-01, PC-02, PC-03 | 1. Navigate to the "Resistors" category that contains exactly 1 part (PC-03). 2. Note the displayed part count. | Part count displayed for "Resistors" shows 1 (direct count). | Medium | REQ-CAT-005 |
+| TC-CAT-010 | Category part count — recursive | PC-01, PC-02, PC-03 | 1. Navigate to the parent "Electronics" category. 2. Note the recursive part count. | Part count for "Electronics" includes all parts in all descendant categories (e.g., ≥ 1 from "Resistors"). | Medium | REQ-CAT-005 |
+| TC-CAT-011 | Parametric table view | PC-01, PC-02, PC-05 | 1. Assign a parameter value to the part from PC-03 (e.g., Resistance = 10 kΩ). 2. Navigate to the "Resistors" category. 3. Switch to the Parametric/Table view. | Table displays parts as rows with parameter columns (e.g., "Resistance"). The value "10 kΩ" appears in the correct cell. | Medium | REQ-CAT-004 |
+
+---
+
+## 3. Part Attributes
+
+| TC-ID | Title | Preconditions | Steps | Expected Result | Priority | Req-ID |
+|-------|-------|---------------|-------|-----------------|----------|--------|
+| TC-ATTR-001 | Set Virtual flag on part | PC-01, PC-03 | 1. Open part from PC-03. 2. Click Edit. 3. Enable "Virtual" checkbox. 4. Save. | Part detail shows "Virtual: Yes". The part may appear tagged/badged as virtual in list views. | High | REQ-ATTR-001 |
+| TC-ATTR-002 | Unset Virtual flag on part | PC-01, PC-03 | 1. Open a virtual part. 2. Click Edit. 3. Disable "Virtual" checkbox. 4. Save. | Part detail shows "Virtual: No" (or unchecked). | High | REQ-ATTR-001 |
+| TC-ATTR-003 | Set Is Template flag | PC-01, PC-03 | 1. Open part from PC-03. 2. Click Edit. 3. Enable "Is Template" checkbox. 4. Save. | Part detail shows "Is Template: Yes". Variants tab becomes visible/enabled. | High | REQ-ATTR-002 |
+| TC-ATTR-004 | Set Assembly flag | PC-01, PC-03 | 1. Open part from PC-03. 2. Click Edit. 3. Enable "Assembly" checkbox. 4. Save. | Part detail shows "Assembly: Yes". BOM tab becomes active/accessible. | Critical | REQ-ATTR-003 |
+| TC-ATTR-005 | Set Component flag | PC-01, PC-03 | 1. Open part from PC-03. 2. Click Edit. 3. Enable "Component" checkbox. 4. Save. | Part detail shows "Component: Yes". Part can now be added to BOM of another assembly. | Critical | REQ-ATTR-004 |
+| TC-ATTR-006 | All flags default to expected values on new part | PC-01, PC-02 | 1. Click "New Part". 2. Observe default checkbox states without changing anything. | Default states match specification: Active = true, Component = true, Purchaseable = true; Virtual = false, Is Template = false, Assembly = false (verify against spec). | High | REQ-ATTR-001 – REQ-ATTR-004 |
+
+---
+
+## 4. Parameters
+
+| TC-ID | Title | Preconditions | Steps | Expected Result | Priority | Req-ID |
+|-------|-------|---------------|-------|-----------------|----------|--------|
+| TC-PARAM-001 | Add parameter to part | PC-01, PC-03, PC-05 | 1. Open part from PC-03. 2. Navigate to Parameters tab. 3. Click "Add Parameter". 4. Select Parameter Template "Resistance". 5. Enter value "10k". 6. Save. | Parameter "Resistance: 10k Ohm" appears in the part's Parameters tab. | High | REQ-CAT-004 |
+| TC-PARAM-002 | Edit parameter value | PC-01, TC-PARAM-001 completed | 1. Open Parameters tab for the part. 2. Click Edit on the "Resistance" parameter. 3. Change value to "22k". 4. Save. | Parameter value updates to "22k Ohm" on the Parameters tab. | High | REQ-CAT-004 |
+| TC-PARAM-003 | Delete parameter from part | PC-01, TC-PARAM-001 completed | 1. Open Parameters tab. 2. Click Delete on the "Resistance" parameter. 3. Confirm. | Parameter row is removed from the Parameters tab. | High | REQ-CAT-004 |
+| TC-PARAM-004 | Parameter appears in category parametric table | PC-01, TC-PARAM-001 completed | 1. Navigate to "Resistors" category. 2. Switch to Parametric/Table view. | The "Resistance" column exists and shows "10k" for the relevant part. | Medium | REQ-CAT-004 |
+
+---
+
+## 5. Templates and Variants
+
+| TC-ID | Title | Preconditions | Steps | Expected Result | Priority | Req-ID |
+|-------|-------|---------------|-------|-----------------|----------|--------|
+| TC-TMPL-001 | Create template part | PC-01, PC-02 | 1. Click "New Part". 2. Enter Name: "Resistor Template". 3. Enable "Is Template". 4. Select Category. 5. Save. | Part is saved with Is Template = Yes. Variants tab is visible on the detail page. | High | REQ-ATTR-002 |
+| TC-TMPL-002 | Create variant from template | PC-01, TC-TMPL-001 completed | 1. Open template part. 2. Navigate to Variants tab. 3. Click "Create Variant". 4. Enter Name: "Resistor 10k Variant". 5. Save. | New variant part is created. It appears under the template's Variants tab. Variant's detail page shows the template as its parent. | High | REQ-ATTR-002 |
+| TC-TMPL-003 | Variant inherits template category | PC-01, TC-TMPL-002 completed | 1. Open the variant created in TC-TMPL-002. 2. Check Category field. | Variant has the same category as the template (or allows override). Category is not blank. | High | REQ-ATTR-002 |
+| TC-TMPL-004 | Template listed in variants tab | PC-01, PC-04 | 1. Open the template part from PC-04. 2. Navigate to Variants tab. | All variants attached to the template are listed with their names and links. | High | REQ-ATTR-002 |
+| TC-TMPL-005 | Remove variant link from template | PC-01, PC-04 | 1. Open a variant of the template. 2. Click Edit. 3. Remove the Variant-of link (set to blank / none). 4. Save. | Part is no longer listed under the template's Variants tab. The part still exists as a standalone part. | Medium | REQ-ATTR-002 |
+
+---
+
+## 6. Revisions
+
+| TC-ID | Title | Preconditions | Steps | Expected Result | Priority | Req-ID |
+|-------|-------|---------------|-------|-----------------|----------|--------|
+| TC-REV-001 | Set revision on part | PC-01, PC-03 | 1. Open part from PC-03. 2. Click Edit. 3. Enter "A" in the Revision field. 4. Save. | Revision "A" is displayed on the part detail page. | Medium | REQ-PART-006 |
+| TC-REV-002 | Update revision field | PC-01, TC-REV-001 completed | 1. Open part with Revision "A". 2. Click Edit. 3. Change Revision to "B". 4. Save. | Revision field now shows "B". | Medium | REQ-PART-006 |
+| TC-REV-003 | Revision visible in parts list | PC-01, TC-REV-001 completed | 1. Navigate to Parts → All Parts. 2. Enable "Revision" column if not visible. | Revision value "A" (or "B") appears next to the part in the list view. | Low | REQ-PART-008 |
+
+---
+
+## 7. Negative and Boundary Cases
+
+| TC-ID | Title | Preconditions | Steps | Expected Result | Priority | Req-ID |
+|-------|-------|---------------|-------|-----------------|----------|--------|
+| TC-NEG-001 | Create part with empty name | PC-01, PC-02 | 1. Click "New Part". 2. Leave Name blank. 3. Select a valid Category. 4. Click Save. | Inline validation error on Name field ("This field is required" or equivalent). Part is not saved. | Critical | REQ-PART-001, REQ-PART-002 |
+| TC-NEG-002 | Create part with name = 1 character | PC-01, PC-02 | 1. Click "New Part". 2. Enter Name: "X". 3. Select Category. 4. Click Save. | Part is saved successfully (single-character name is valid). | High | REQ-PART-002 |
+| TC-NEG-003 | Create part with empty description | PC-01, PC-02 | 1. Click "New Part". 2. Enter valid Name and Category. 3. Leave Description blank. 4. Click Save. | Part is saved successfully (description is optional). | High | REQ-PART-003 |
+| TC-NEG-004 | Create duplicate part name in same category | PC-01, PC-02, PC-03 | 1. Click "New Part". 2. Enter the exact same name as PC-03. 3. Select the same category. 4. Click Save. | System either prevents the duplicate and shows an error, or allows it (verify expected behavior per spec). Document actual result. | Medium | REQ-PART-001 |
+| TC-NEG-005 | Delete category with parts assigned — prevented | PC-01, PC-02, PC-03 | 1. Navigate to the category that contains PC-03. 2. Click Delete on the category. 3. Confirm. | Deletion is prevented. Error message states the category has assigned parts. Category remains. | Critical | REQ-CAT-002 |
+| TC-NEG-006 | Delete category with child categories — prevented | PC-01, TC-CAT-002 completed | 1. Navigate to the parent category. 2. Click Delete. 3. Confirm. | Deletion is prevented. Error message states the category has child categories. Category remains. | Critical | REQ-CAT-002 |
+| TC-NEG-007 | Name field — paste 100 chars, then add 1 more | PC-01, PC-02 | 1. Open New Part form. 2. Paste exactly 100 characters into Name. 3. Attempt to type one additional character. | The field either rejects the additional character (input capped at 100) or allows it but validation fails on Save (must not silently truncate). | Critical | REQ-PART-002 |
+| TC-NEG-008 | Description field — paste 250 chars, then add 1 more | PC-01, PC-02 | 1. Open New Part form. 2. Paste exactly 250 characters into Description. 3. Attempt to type one additional character. | Same behavior as TC-NEG-007: rejected at input or validation error on Save without silent truncation. | High | REQ-PART-003 |
+| TC-NEG-009 | Edit part — clear category | PC-01, PC-03 | 1. Open part from PC-03. 2. Click Edit. 3. Clear the Category field. 4. Click Save. | Inline validation error on Category field. Part is not saved without a category. | Critical | REQ-PART-004 |
+| TC-NEG-010 | Access part detail with invalid ID | PC-01 | 1. Manually navigate to /part/999999/ (non-existent ID) in the browser URL bar. | System returns a 404 page or equivalent "Part not found" error. No unhandled exception or blank page. | Medium | REQ-PART-005 |
+| TC-NEG-011 | Delete part with BOM reference — prevented | PC-01 | 1. Create Part A (assembly with BOM). 2. Add Part B as a BOM line item. 3. Try to delete Part B. | Deletion of Part B is prevented. Error message references active BOM usage. | Critical | REQ-PART-007 |
+| TC-NEG-012 | Create category with empty name | PC-01 | 1. Navigate to Parts → Categories. 2. Click "New Category". 3. Leave Name blank. 4. Click Save. | Inline validation error on Name field. Category is not saved. | Critical | REQ-CAT-002 |
+| TC-NEG-013 | Filter parts list with no matching results | PC-01 | 1. Navigate to Parts → All Parts. 2. Enter a nonsense string (e.g., "XXXXXXXXXNOTAPART") into the search filter. | Empty results state is shown (e.g., "No results found"). No error or crash. Page remains functional. | High | REQ-PART-008 |
+| TC-NEG-014 | Parametric table — part with no parameters | PC-01, PC-02 | 1. Assign a part with no parameters to a category that has parameter templates. 2. Navigate to category parametric table view. | The part appears as a row with empty/dash cells for parameter columns. No error. | Medium | REQ-CAT-004 |
+| TC-NEG-015 | Template flag — remove from part with existing variants | PC-01, PC-04 | 1. Open template part from PC-04 (which has variants). 2. Click Edit. 3. Disable "Is Template". 4. Click Save. | System either prevents the change and shows an error (preferred), or disassociates variants and warns the user. Variants must not become orphaned silently. | Medium | REQ-ATTR-002 |
+
+---
+
+## Traceability Matrix Summary
+
+| Req-ID | Test Cases |
+|--------|-----------|
+| REQ-PART-001 | TC-PART-001, TC-PART-002, TC-NEG-001, TC-NEG-004 |
+| REQ-PART-002 | TC-PART-003, TC-PART-004, TC-NEG-001, TC-NEG-002, TC-NEG-007 |
+| REQ-PART-003 | TC-PART-005, TC-PART-006, TC-NEG-003, TC-NEG-008 |
+| REQ-PART-004 | TC-PART-007, TC-NEG-009 |
+| REQ-PART-005 | TC-PART-008, TC-NEG-010 |
+| REQ-PART-006 | TC-PART-009, TC-PART-010, TC-REV-001, TC-REV-002 |
+| REQ-PART-007 | TC-PART-011, TC-PART-012, TC-NEG-011 |
+| REQ-PART-008 | TC-PART-013, TC-PART-014, TC-PART-015, TC-REV-003, TC-NEG-013 |
+| REQ-CAT-001 | TC-CAT-002, TC-CAT-003 |
+| REQ-CAT-002 | TC-CAT-001 – TC-CAT-006, TC-NEG-005, TC-NEG-006, TC-NEG-012 |
+| REQ-CAT-003 | TC-CAT-007, TC-CAT-008 |
+| REQ-CAT-004 | TC-CAT-011, TC-PARAM-001 – TC-PARAM-004, TC-NEG-014 |
+| REQ-CAT-005 | TC-CAT-009, TC-CAT-010 |
+| REQ-ATTR-001 | TC-ATTR-001, TC-ATTR-002, TC-ATTR-006 |
+| REQ-ATTR-002 | TC-ATTR-003, TC-ATTR-006, TC-TMPL-001 – TC-TMPL-005, TC-NEG-015 |
+| REQ-ATTR-003 | TC-ATTR-004, TC-ATTR-006 |
+| REQ-ATTR-004 | TC-ATTR-005, TC-ATTR-006 |

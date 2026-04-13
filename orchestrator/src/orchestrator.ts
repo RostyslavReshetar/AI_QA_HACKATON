@@ -32,7 +32,7 @@ export class Orchestrator {
       model: options.model,
       dryRun: options.dryRun,
       verbose: options.verbose,
-      timeoutMs: 5 * 60 * 1000, // 5 minutes per agent
+      timeoutMs: 10 * 60 * 1000, // 10 minutes per agent
     });
 
     this.agents = [
