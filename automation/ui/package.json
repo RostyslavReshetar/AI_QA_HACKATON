@@ -1,0 +1,15 @@
+{
+  "name": "inventree-ui-tests",
+  "version": "1.0.0",
+  "description": "Playwright UI test automation for InvenTree",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:headed": "npx playwright test --headed",
+    "test:report": "npx playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "typescript": "^5.8.0",
+    "@types/node": "^22.0.0"
+  }
+}
