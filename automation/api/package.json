@@ -1,0 +1,18 @@
+{
+  "name": "inventree-api-tests",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "test": "npx playwright test",
+    "test:crud": "npx playwright test tests/parts-crud",
+    "test:filter": "npx playwright test tests/parts-filtering",
+    "test:validate": "npx playwright test tests/parts-validation",
+    "test:report": "npx playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0",
+    "ajv": "^8.17.0",
+    "typescript": "^5.7.0",
+    "@types/node": "^22.10.0"
+  }
+}
