@@ -6,9 +6,6 @@ BASE_URL="${INVENTREE_URL:-http://localhost:8080}"
 ADMIN_USER="${INVENTREE_ADMIN_USER:-admin}"
 ADMIN_PASS="${INVENTREE_ADMIN_PASSWORD:-inventree123}"
 
-echo "==> Collecting static files..."
-docker exec inventree-qa-server invoke static 2>/dev/null || true
-
 echo "==> Waiting for InvenTree at $BASE_URL ..."
 
 MAX_RETRIES=60

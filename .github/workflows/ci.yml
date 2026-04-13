@@ -20,14 +20,23 @@ jobs:
         run: |
           docker compose --env-file .env up -d
           echo "Waiting for InvenTree to be ready..."
-          for i in $(seq 1 60); do
+          for i in $(seq 1 120); do
             if curl -sf http://localhost:8080/api/ > /dev/null 2>&1; then
               echo "InvenTree is ready!"
               break
             fi
-            echo "Waiting... ($i/60)"
+            if [ "$i" -eq 120 ]; then
+              echo "ERROR: InvenTree did not start"
+              docker compose --env-file .env logs
+              exit 1
+            fi
+            echo "Waiting... ($i/120)"
             sleep 5
           done
+
+      - name: Collect static files
+        working-directory: docker
+        run: docker compose --env-file .env exec -T inventree-server invoke static
 
       - name: Seed test data
         run: bash docker/setup-superuser.sh
@@ -38,7 +47,7 @@ jobs:
 
       - name: Install API test dependencies
         working-directory: automation/api
-        run: npm ci
+        run: npm install
 
       - name: Run API tests
         working-directory: automation/api
@@ -65,13 +74,22 @@ jobs:
         working-directory: docker
         run: |
           docker compose --env-file .env up -d
-          for i in $(seq 1 60); do
+          for i in $(seq 1 120); do
             if curl -sf http://localhost:8080/api/ > /dev/null 2>&1; then
               echo "InvenTree is ready!"
               break
             fi
+            if [ "$i" -eq 120 ]; then
+              echo "ERROR: InvenTree did not start"
+              docker compose --env-file .env logs
+              exit 1
+            fi
             sleep 5
           done
+
+      - name: Collect static files
+        working-directory: docker
+        run: docker compose --env-file .env exec -T inventree-server invoke static
 
       - name: Seed test data
         run: bash docker/setup-superuser.sh
@@ -83,7 +101,7 @@ jobs:
       - name: Install UI test dependencies
         working-directory: automation/ui
         run: |
-          npm ci
+          npm install
           npx playwright install chromium --with-deps
 
       - name: Run UI tests
