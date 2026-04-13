@@ -53,15 +53,10 @@ export class ClaudeRunner {
         '-p',
         '--model', this.options.model,
         '--output-format', 'text',
-        '--verbose',
       ], {
         input: this.buildFullPrompt(systemPrompt, userPrompt),
         timeout: this.options.timeoutMs,
         cwd: this.options.projectRoot,
-        env: {
-          ...process.env,
-          CLAUDE_CODE_SIMPLE: '1',
-        },
       });
 
       output = result.stdout;
