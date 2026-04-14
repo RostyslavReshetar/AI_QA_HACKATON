@@ -17,7 +17,7 @@ Login: admin/inventree123. URL pattern: /web/. Login page: /web/login (fields: l
 Test cases to automate:
 ${testCases}
 
-Generate these files using --- FILE: path --- / --- END FILE --- format:
+Generate these files using --- FILE: path --- / --- END FILE --- format. IMPORTANT: place raw TypeScript code directly between markers — do NOT wrap in markdown code fences (no \`\`\`typescript, no \`\`\`).
 1. automation/ui/pages/base.page.ts — BasePage class
 2. automation/ui/pages/login.page.ts — login at /web/login
 3. automation/ui/pages/parts-list.page.ts — navigate to /web/part/category/index/parts

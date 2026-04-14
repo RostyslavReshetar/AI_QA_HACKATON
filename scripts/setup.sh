@@ -28,7 +28,17 @@ for i in $(seq 1 $MAX_RETRIES); do
   sleep 5
 done
 
-# 3. Seed test data
+# 3. Collect frontend static files (fixes INVE-E1)
+# The stable Docker image ships the built frontend, but InvenTree still needs
+# to copy those files into the shared data volume that Caddy serves from.
+# Without this step the UI shows: "If you see this text there might be an
+# issue with your update" on every panel (InvenTree error code INVE-E1).
+echo ""
+echo "==> Collecting static files (INVE-E1 fix)..."
+docker exec inventree-qa-server invoke static
+echo "  Static files collected."
+
+# 4. Seed test data
 echo ""
 echo "==> Seeding test data..."
 bash docker/setup-superuser.sh

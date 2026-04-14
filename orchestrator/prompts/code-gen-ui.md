@@ -243,19 +243,19 @@ Generate a `playwright.config.ts` with:
 
 ## Output Format
 
-Output EVERY file with its path wrapped in file markers:
+Output EVERY file with its path wrapped in file markers.
+
+**CRITICAL: Place raw source code directly between the markers. Do NOT wrap content in markdown code fences (no ```typescript, no ```).**
 
 ```
 --- FILE: tests/ui/part-crud.spec.ts ---
-(complete file content)
+import { test, expect } from '../../fixtures/auth.fixture';
+// ... rest of the file content directly, no backtick fences
 --- END FILE ---
 
 --- FILE: pages/parts-list.page.ts ---
-(complete file content)
---- END FILE ---
-
---- FILE: locators/parts.locators.ts ---
-(complete file content)
+import { Page } from '@playwright/test';
+// ... rest of the file content directly, no backtick fences
 --- END FILE ---
 
 (... continue for ALL files ...)

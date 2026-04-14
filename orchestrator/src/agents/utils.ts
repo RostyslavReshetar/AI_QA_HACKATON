@@ -13,7 +13,9 @@ export function parseFileBlocks(raw: string): OutputFile[] {
   let match: RegExpExecArray | null;
   while ((match = regex.exec(raw)) !== null) {
     const filePath = match[1].trim();
-    const content = match[2].trim();
+    let content = match[2].trim();
+    // Strip markdown code fences if Claude wrapped the content
+    content = content.replace(/^```[\w]*\n?/, '').replace(/\n?```$/, '').trim();
     files.push({ path: filePath, content });
   }
 

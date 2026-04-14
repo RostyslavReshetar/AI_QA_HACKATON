@@ -401,19 +401,19 @@ export default defineConfig({
 
 ## Output Format
 
-Output EVERY file with its path wrapped in file markers:
+Output EVERY file with its path wrapped in file markers.
+
+**CRITICAL: Place raw source code directly between the markers. Do NOT wrap content in markdown code fences (no ```typescript, no ```).**
 
 ```
 --- FILE: tests/api/parts-crud.spec.ts ---
-(complete file content)
+import { test, expect } from '@playwright/test';
+// ... rest of the file content directly, no backtick fences
 --- END FILE ---
 
 --- FILE: helpers/api-client.ts ---
-(complete file content)
---- END FILE ---
-
---- FILE: schemas/part.schema.ts ---
-(complete file content)
+import { APIRequestContext, APIResponse } from '@playwright/test';
+// ... rest of the file content directly, no backtick fences
 --- END FILE ---
 
 (... continue for ALL files ...)

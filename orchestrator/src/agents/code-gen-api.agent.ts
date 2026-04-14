@@ -17,7 +17,7 @@ Auth: GET /api/user/token/ with Basic Auth admin:inventree123 → Token header.
 API test cases:
 ${testCases}
 
-Generate files using --- FILE: path --- / --- END FILE --- format:
+Generate files using --- FILE: path --- / --- END FILE --- format. IMPORTANT: place raw TypeScript/JSON code directly between markers — do NOT wrap in markdown code fences (no \`\`\`typescript, no \`\`\`).
 1. automation/api/helpers/auth.ts — token management
 2. automation/api/helpers/api-client.ts — typed client for Part/Category CRUD
 3. automation/api/helpers/test-data-factory.ts — unique data + cleanup registry

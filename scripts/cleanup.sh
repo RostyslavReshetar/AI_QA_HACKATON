@@ -45,11 +45,8 @@ rm -f requirements.md
 # or session history showing the agent interaction"
 echo "==> Preserving ai-logs/ (submission deliverable)"
 
-# Agent artefacts
-echo "==> Removing agent artefact copies..."
-rm -rf agent-artefacts/prompts/*
-rm -rf agent-artefacts/skills/*
-rm -f agent-artefacts/instructions.md
+# Agent artefacts — PRESERVED as submission deliverable
+echo "==> Preserving agent-artefacts/ (submission deliverable)"
 
 echo ""
 echo "================================="
