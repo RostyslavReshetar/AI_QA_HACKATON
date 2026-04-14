@@ -40,9 +40,10 @@ rm -f risk-matrix.md
 rm -f review-report.md
 rm -f requirements.md
 
-# AI logs
-echo "==> Removing AI logs..."
-rm -rf ai-logs/*
+# AI logs — PRESERVED as deliverable (conversation logs showing agent interactions)
+# Per hackathon requirements (Deliverable B): "Conversation logs — Exported chat logs
+# or session history showing the agent interaction"
+echo "==> Preserving ai-logs/ (submission deliverable)"
 
 # Agent artefacts
 echo "==> Removing agent artefact copies..."
